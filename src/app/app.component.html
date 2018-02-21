@@ -1,0 +1,24 @@
+<div style="text-align:center">
+  <h1>
+    {{ title }}
+  </h1>
+  Balance: <span>{{balance}}</span>
+  <div class="row">
+    <input matInput placeholder="From" aria-label="From" [matAutocomplete]="auto" [formControl]="tradeCtrl" class="col">
+    <mat-autocomplete #auto="matAutocomplete">
+      <mat-option *ngFor="let token of filteredTokens | async" [value]="token.name">
+        <span>{{ token.name }}</span> |
+        <small>{{token.symbol}}</small>
+      </mat-option>
+    </mat-autocomplete>
+
+    <input matInput placeholder="To" aria-label="To" [matAutocomplete]="auto" [formControl]="tradeCtrl" class="col">
+    <mat-autocomplete #auto="matAutocomplete">
+      <mat-option *ngFor="let token of filteredTokens | async" [value]="token.name">
+        <span>{{ token.name }}</span> |
+        <small>{{token.symbol}}</small>
+      </mat-option>
+    </mat-autocomplete>
+  </div>
+  <button mat-raised-button color="primary" (click)="onTrade()">Exchange</button>
+</div>
