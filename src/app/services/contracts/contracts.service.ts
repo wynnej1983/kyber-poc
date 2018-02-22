@@ -76,7 +76,7 @@ export class ContractsService {
     let account = await this.getAccount();
 
     return new Promise((resolve, reject) => {
-      this._kyberNetworkContract.methods.trade(source, srcAmount, dest, destAddress, maxDestAmount, minConversionRate, throwOnFailure).call().then(result => {
+      this._kyberNetworkContract.methods.trade(source, srcAmount, dest, destAddress, maxDestAmount, minConversionRate, throwOnFailure).send({from: account, gas: '250000', gasPrice: '2000000000'}).then(result => {
         debugger;
         resolve(result);
       })

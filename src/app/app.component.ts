@@ -109,7 +109,7 @@ export class AppComponent {
   onTrade() {
     // hardcoding trade params for testing
     const source = '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee';
-    const srcAmount = '10000000000000000'; // 0.01 ETH
+    const srcAmount = '50000000000000000'; // 0.05 ETH
     const dest = '0x98541419c0f9873acf6bf449cb7246f9df600d2c';
     const destAddress = '0x98541419c0f9873acf6bf449cb7246f9df600d2c';
     const maxDestAmount = '1'; // 1 OMG
