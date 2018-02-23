@@ -75,8 +75,10 @@ export class ContractsService {
   public async trade(source, srcAmount, dest, destAddress, maxDestAmount, minConversionRate, throwOnFailure=false): Promise<number> {
     let account = await this.getAccount();
 
+    //const gasPrice = await this._kyberNetworkContract.methods.trade(source, srcAmount, dest, destAddress, maxDestAmount, minConversionRate, throwOnFailure).estimateGas({from: account});
+debugger;
     return new Promise((resolve, reject) => {
-      this._kyberNetworkContract.methods.trade(source, srcAmount, dest, destAddress, maxDestAmount, minConversionRate, throwOnFailure).send({from: account, gas: '250000', gasPrice: '2000000000'}).then(result => {
+      this._kyberNetworkContract.methods.trade(source, srcAmount, dest, destAddress, maxDestAmount, minConversionRate, throwOnFailure).send({from: account, value: srcAmount, gas: '500000', gasPrice: '1000000000'}).then(result => {
         debugger;
         resolve(result);
       })

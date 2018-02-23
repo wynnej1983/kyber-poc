@@ -11,6 +11,8 @@ export class Token {
   constructor(public name: string, public symbol: string, public address: string) { }
 }
 
+const MAX_UINT = 10**18;
+
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
@@ -108,12 +110,12 @@ export class AppComponent {
 
   onTrade() {
     // hardcoding trade params for testing
-    const source = '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee';
-    const srcAmount = '50000000000000000'; // 0.05 ETH
-    const dest = '0x98541419c0f9873acf6bf449cb7246f9df600d2c';
-    const destAddress = '0x98541419c0f9873acf6bf449cb7246f9df600d2c';
-    const maxDestAmount = '1'; // 1 OMG
-    const minConversionRate = '48';
+    const source = '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee'; // ETH
+    const srcAmount = '111000000000000000'; // 0.111 ETH
+    const dest = '0x5b9a857e0c3f2acc5b94f6693536d3adf5d6e6be'; // OMG 
+    const destAddress = '0x989274c9ce2fd5fc44adaabed38429fdddf80233'; // deafault user account
+    const maxDestAmount = MAX_UINT;
+    const minConversionRate = '45'; // min ETH/OMG rate
     const throwOnFailure = false;
 
     this.cs.trade(source, srcAmount, dest, destAddress, maxDestAmount, minConversionRate, throwOnFailure);
