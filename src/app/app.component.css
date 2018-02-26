@@ -1,3 +1,38 @@
+#balance-container {
+  height: 50px;
+  padding: 15px;
+  color: #3ecdfd;
+}
+#exchange-title {
+  height: 50px;
+  padding: 15px;
+  padding-bottom: 20px;
+  font-size: 24px;
+  letter-spacing: .5px;
+  color: #3ecdfd;
+}
+#src-token-balance {
+  color: #aaa;
+  font-size: 14px;
+}
+#submit-button {
+  background-color: #3ecdfd;
+  padding: 10px;
+  width: 200px;
+  border-radius: 30px;
+}
+.card {
+  height: 205px;
+}
 .full-width {
   width: 100%;
+}
+.rate {
+  padding-top: 30px;
+  padding-bottom: 7px;
+  color: #3ecdfd;
+}
+.pending {
+  padding-top: 10px;
+  color: #aaa;
 }

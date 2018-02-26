@@ -1,7 +1,11 @@
 import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
 import {BrowserAnimationsModule} from '@angular/platform-browser/animations';
+import {MatIconModule} from '@angular/material/icon';
 import {MatInputModule} from '@angular/material/input';
+import {MatCardModule} from '@angular/material/card';
+import {MatProgressBarModule} from '@angular/material/progress-bar';
+import {MatSnackBarModule} from '@angular/material/snack-bar';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import {MatButtonModule} from '@angular/material';
 import {MatSelectModule} from '@angular/material/select';
@@ -24,7 +28,11 @@ import {ContractsService} from "./services/contracts/contracts.service";
     BrowserAnimationsModule,
     FormsModule,
     ReactiveFormsModule,
+    MatIconModule,
     MatInputModule,
+    MatCardModule,
+    MatProgressBarModule,
+    MatSnackBarModule,
     MatSelectModule,
     MatButtonModule,
     MatAutocompleteModule,

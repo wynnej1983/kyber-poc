@@ -1,41 +1,55 @@
-<div class="container-fluid">
-  <div class="row justify-content-end">
-    Balance: <span>{{balance}}</span>
+<div class="container">
+  <div id="balance-container" class="row align-items-center justify-content-end">
+    <span>Total</span>
+    <span class="font-weight-bold px-2">{{totalBalance}}</span>
+    <span>USD</span>
+  </div>
+  <div id="exchange-title" class="row align-items-end justify-content-start">
+    Exchange
   </div>
   <div class="row">
     <div class="col">
-      <form class="full-width" [formGroup]="exchangeForm" (ngSubmit)="onTrade()">
+      <form [formGroup]="exchangeForm" (ngSubmit)="onTrade()">
         <div class="row align-items-center">
-          <div class="col-5">
-            <mat-form-field class="full-width">
-              <input matInput placeholder="From" aria-label="From" [matAutocomplete]="autoSrc" formControlName="srcToken">
-              <mat-autocomplete #autoSrc="matAutocomplete">
-                <mat-option *ngFor="let srcToken of filteredSrcTokens | async" [value]="srcToken.name">
-                  <span>{{ srcToken.name }}</span> |
-                  <small>{{srcToken.symbol}}</small>
-                </mat-option>
-              </mat-autocomplete>
-            </mat-form-field>
-            <mat-form-field class="full-width">
-              <input matInput placeholder="Amount" aria-label="srcTokenQty" formControlName="srcTokenQty" autofocus>
-            </mat-form-field>
+          <div class="col">
+            <mat-card class="card">
+              <mat-form-field class="full-width">
+                <input matInput placeholder="From" aria-label="From" [matAutocomplete]="autoSrc" formControlName="srcToken">
+                <mat-autocomplete #autoSrc="matAutocomplete" [displayWith]="displayFn">
+                  <mat-option *ngFor="let srcToken of filteredSrcTokens | async" [value]="srcToken">
+                    <img style="vertical-align:middle;margin-right:5px" aria-hidden [src]="_DomSanitizer.bypassSecurityTrustUrl(srcToken.img)" height="25" />
+                    <span>{{ srcToken.name }}</span> |
+                    <small>{{srcToken.symbol}}</small>
+                  </mat-option>
+                </mat-autocomplete>
+              </mat-form-field>
+              <mat-form-field class="full-width">
+                <mat-label>Amount</mat-label>
+                <input matInput placeholder="0" aria-label="srcTokenQty" formControlName="srcTokenQty" autofocus>
+              </mat-form-field>
+              <span id="src-token-balance">Address balance {{srcTokenBalance}} {{exchangeForm.value.srcToken.symbol}}</span>
+            </mat-card>
           </div>
           <div class="col-2 text-center">
-            <=>
+            <mat-icon>swap_horiz</mat-icon>
           </div>
-          <div class="col-5">
-            <mat-form-field class="full-width">
-              <input matInput placeholder="To" aria-label="To" [matAutocomplete]="autoDest" formControlName="destToken">
-              <mat-autocomplete #autoDest="matAutocomplete">
-                <mat-option *ngFor="let destToken of filteredDestTokens | async" [value]="destToken.name">
-                  <span>{{ destToken.name }}</span> |
-                  <small>{{destToken.symbol}}</small>
-                </mat-option>
-              </mat-autocomplete>
-            </mat-form-field>
-            <mat-form-field class="full-width">
-              <input matInput placeholder="Amount" aria-label="destTokenQty" formControlName="destTokenQty">
-            </mat-form-field>
+          <div class="col">
+            <mat-card class="card">
+              <mat-form-field class="full-width">
+                <input matInput placeholder="To" aria-label="To" [matAutocomplete]="autoDest" formControlName="destToken">
+                <mat-autocomplete #autoDest="matAutocomplete" [displayWith]="displayFn">
+                  <mat-option *ngFor="let destToken of filteredDestTokens | async" [value]="destToken">
+                    <img style="vertical-align:middle;" aria-hidden [src]="_DomSanitizer.bypassSecurityTrustUrl(destToken.img)" height="25" />
+                    <span>{{ destToken.name }}</span> |
+                    <small>{{destToken.symbol}}</small>
+                  </mat-option>
+                </mat-autocomplete>
+              </mat-form-field>
+              <mat-form-field class="full-width">
+                <mat-label>Amount</mat-label>
+                <input matInput placeholder="0" aria-label="destTokenQty" formControlName="destTokenQty">
+              </mat-form-field>
+            </mat-card>
           </div>
         </div>
       </form>
@@ -43,10 +57,14 @@
   </div>
   <div class="row justify-content-center">
     <div class="col text-center">
-      <div>
-        Rate: <span>1 {{exchangeForm.value.srcToken}} = {{rate}} {{exchangeForm.value.destToken}}</span>
+      <div class="rate">
+        1 {{exchangeForm.value.srcToken.symbol}} = {{rate}} {{exchangeForm.value.destToken.symbol}}
       </div>
-      <button mat-raised-button color="primary" (click)="onTrade()">Exchange</button>
+      <button id="submit-button" mat-raised-button color="primary" (click)="onTrade()">EXCHANGE</button>
+      <div class="pending" *ngIf="txHash">
+        <span>Waiting for transaction to be mined...</span>
+        <div>{{txHash}}</div>
+      </div>
     </div>
   </div>
 </div>
