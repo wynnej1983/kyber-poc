@@ -13,6 +13,7 @@ export class ContractsService {
   private _web3: any;
 
   private _kyberNetworkContract: any;
+  //private _kyberNetworkContractAddress: string = "0xe801403a9b8dae494f9088a4687c1c139fae2fe4";
   private _kyberNetworkContractAddress: string = "0x0a56d8a49E71da8d7F9C65F95063dB48A3C9560B";
 
   constructor() {
@@ -72,14 +73,27 @@ export class ContractsService {
     }) as Promise<number>;
   }
 
-  public async trade(source, srcAmount, dest, destAddress, maxDestAmount, minConversionRate, throwOnFailure=false): Promise<number> {
+  public async getExpectedRate(srcToken, destToken, srcQty): Promise<number> {
     let account = await this.getAccount();
 
-    const gasPrice = await this._kyberNetworkContract.methods.trade(source, srcAmount, dest, destAddress, maxDestAmount, minConversionRate, throwOnFailure).estimateGas({from: account, gas: '1000000000'});
+    return new Promise((resolve, reject) => {
+      this._kyberNetworkContract.methods.getExpectedRate(srcToken, destToken, srcQty).call().then(result => {
+        resolve(result.expectedRate);
+      })
+      .catch(err => {
+        reject(err);
+      });
+    }) as Promise<number>;
+  }
+
+  public async trade(source, srcAmount, dest, destAddress, maxDestAmount, minConversionRate, throwOnFailure=false): Promise<number> {
+    let account = await this.getAccount();
+    const srcAmountWei = this._web3.utils.toWei(srcAmount, 'ether');
+    const gasPrice = await this._kyberNetworkContract.methods.trade(source, srcAmountWei, dest, destAddress, maxDestAmount, minConversionRate, throwOnFailure).estimateGas({from: account, gas: '1000000000'});
 
     return new Promise((resolve, reject) => {
       this._kyberNetworkContract.methods
-        .trade(source, srcAmount, dest, destAddress, maxDestAmount, minConversionRate, throwOnFailure)
+        .trade(source, srcAmountWei, dest, destAddress, maxDestAmount, minConversionRate, throwOnFailure)
         .send({from: account, value: srcAmount, gasPrice})
         .once('transactionHash', console.log)
         .once('receipt', console.log)

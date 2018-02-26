@@ -4,6 +4,8 @@ import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import {Observable} from 'rxjs/Observable';
 import {startWith} from 'rxjs/operators/startWith';
 import {map} from 'rxjs/operators/map';
+import 'rxjs/add/operator/debounceTime';
+import 'rxjs/add/operator/distinctUntilChanged';
 
 import {ContractsService} from "./services/contracts/contracts.service";
 
@@ -20,7 +22,9 @@ const MAX_UINT = 10**18;
 })
 export class AppComponent implements OnInit {
   title = 'kyber poc';
+  account = null;
   balance = 0;
+  rate = 0;
   exchangeForm: FormGroup;
   filteredSrcTokens: Observable<any[]>;
   filteredDestTokens: Observable<any[]>;
@@ -95,40 +99,56 @@ export class AppComponent implements OnInit {
 
   constructor(private fb: FormBuilder, private cs: ContractsService) {
     this.exchangeForm = fb.group({
-      'srcToken': [null, Validators.required],
-      'srcTokenQty': [null, Validators.required],
-      'destToken': [null, Validators.required],
-      'destTokenQty': [null, Validators.required],
+      'srcToken': ['Ethereum', Validators.required],
+      'srcTokenQty': [0, Validators.required],
+      'destToken': ['KyberNetwork', Validators.required],
+      'destTokenQty': [0, Validators.required],
     });
-    this.filteredSrcTokens = this.exchangeForm.get('srcToken').valueChanges
-      .pipe(
-        startWith(''),
-        map(token => token ? this.filterTokens(token) : this.tokens.slice())
-      );
-    this.filteredDestTokens = this.exchangeForm.get('destToken').valueChanges
-      .pipe(
-        startWith(''),
-        map(token => token ? this.filterTokens(token) : this.tokens.slice())
-      );
+
+    // subscribe to autocomplete changes
+    this.filteredSrcTokens = this.filterTokensSubscribe('srcToken');
+    this.filteredDestTokens = this.filterTokensSubscribe('destToken');
+
+    // subscribe to form input changes
+    this.exchangeForm.valueChanges
+      .debounceTime(1000)
+      .distinctUntilChanged()
+      .subscribe(val => {
+        const { srcToken, destToken, srcTokenQty } = val;
+        const srcToken = this.tokens.find(token => token.name === val.srcToken).address;
+        const destToken = this.tokens.find(token => token.name === val.destToken).address;
+        const srcAmount = this.exchangeForm.value.srcTokenQty;
+        this.cs.getExpectedRate(srcToken, destToken, parseInt(srcTokenQty)).then(result => {
+          this.rate = result;
+        });
+      });
   }
 
-  ngOnInit(): void {
-    this.cs.getUserBalance().then(balance => this.balance = balance);
+  async ngOnInit(): void {
+    this.account = await this.cs.getAccount();
+    this.balance = await this.cs.getUserBalance();
   }
 
-  filterTokens(name: string) {
+  filter(name) {
     return this.tokens.filter(token =>
       token.name.toLowerCase().indexOf(name.toLowerCase()) === 0);
   }
 
+  filterTokensSubscribe(formControlName: string) {
+    return this.exchangeForm.get(formControlName).valueChanges
+      .pipe(
+        startWith(''),
+        map(token => token ? this.filter(token) : this.tokens.slice())
+      );
+  }
+
   onTrade() {
-    // hardcoding trade params for testing
-    const source = '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee'; // ETH
-    const srcAmount = '22000000000000000'; // 0.022 ETH
-    const dest = '0x5b9a857e0c3f2acc5b94f6693536d3adf5d6e6be'; // OMG 
-    const destAddress = '0x989274c9ce2fd5fc44adaabed38429fdddf80233'; // deafault user account
+    const source = this.tokens.find(token => token.name === this.exchangeForm.value.srcToken).address;
+    const srcAmount = this.exchangeForm.value.srcTokenQty;
+    const dest = this.tokens.find(token => token.name === this.exchangeForm.value.destToken).address;
+    const destAddress = this.account; // default user account
     const maxDestAmount = MAX_UINT;
-    const minConversionRate = '1'; // min ETH/OMG rate, 1=market rate
+    const minConversionRate = '1'; // 1=market rate
     const throwOnFailure = false;
 
     this.cs.trade(source, srcAmount, dest, destAddress, maxDestAmount, minConversionRate, throwOnFailure);

@@ -5,7 +5,7 @@
   <div class="row">
     <div class="col">
       <form class="full-width" [formGroup]="exchangeForm" (ngSubmit)="onTrade()">
-        <div class="row">
+        <div class="row align-items-center">
           <div class="col-5">
             <mat-form-field class="full-width">
               <input matInput placeholder="From" aria-label="From" [matAutocomplete]="autoSrc" formControlName="srcToken">
@@ -17,7 +17,7 @@
               </mat-autocomplete>
             </mat-form-field>
             <mat-form-field class="full-width">
-              <input matInput placeholder="0" aria-label="srcTokenQty" formControlName="srcTokenQty">
+              <input matInput placeholder="Amount" aria-label="srcTokenQty" formControlName="srcTokenQty" autofocus>
             </mat-form-field>
           </div>
           <div class="col-2 text-center">
@@ -34,7 +34,7 @@
               </mat-autocomplete>
             </mat-form-field>
             <mat-form-field class="full-width">
-              <input matInput placeholder="0" aria-label="destTokenQty" formControlName="destTokenQty">
+              <input matInput placeholder="Amount" aria-label="destTokenQty" formControlName="destTokenQty">
             </mat-form-field>
           </div>
         </div>
@@ -44,7 +44,7 @@
   <div class="row justify-content-center">
     <div class="col text-center">
       <div>
-        Rate: <span>{{rate}}</span>
+        Rate: <span>1 {{exchangeForm.value.srcToken}} = {{rate}} {{exchangeForm.value.destToken}}</span>
       </div>
       <button mat-raised-button color="primary" (click)="onTrade()">Exchange</button>
     </div>
