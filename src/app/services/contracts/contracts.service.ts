@@ -89,13 +89,14 @@ export class ContractsService {
   public async trade(source, srcAmount, dest, destAddress, maxDestAmount, minConversionRate, throwOnFailure=false): Promise<number> {
     let account = await this.getAccount();
     const srcAmountWei = this._web3.utils.toWei(srcAmount, 'ether');
-    const gasPrice = await this._kyberNetworkContract.methods.trade(source, srcAmountWei, dest, destAddress, maxDestAmount, minConversionRate, throwOnFailure).estimateGas({from: account, gas: '1000000000'});
+    //const gasPrice = await this._kyberNetworkContract.methods.trade(source, srcAmountWei, dest, destAddress, maxDestAmount, minConversionRate, throwOnFailure).estimateGas({from: account, gas: '1000000000'});
 
     return new Promise((resolve, reject) => {
       this._kyberNetworkContract.methods
         .trade(source, srcAmountWei, dest, destAddress, maxDestAmount, minConversionRate, throwOnFailure)
-        .send({from: account, value: srcAmount, gasPrice})
+        .send({from: account, value: srcAmountWei, gasPrice: '1000000000', gas: '500000'})
         .once('transactionHash', console.log)
+        .on('confirmation', console.log)
         .once('receipt', console.log)
         .once('error', console.log)
     }) as Promise<any>;
