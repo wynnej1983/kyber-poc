@@ -1,5 +1,5 @@
-import { Component } from '@angular/core';
-import { FormControl, FormGroup } from '@angular/forms';
+import { Component, OnInit } from '@angular/core';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 
 import {Observable} from 'rxjs/Observable';
 import {startWith} from 'rxjs/operators/startWith';
@@ -18,11 +18,12 @@ const MAX_UINT = 10**18;
   templateUrl: './app.component.html',
   styleUrls: ['./app.component.css']
 })
-export class AppComponent {
+export class AppComponent implements OnInit {
   title = 'kyber poc';
   balance = 0;
-  tradeCtrl: FormControl;
-  filteredTokens: Observable<any[]>;
+  exchangeForm: FormGroup;
+  filteredSrcTokens: Observable<any[]>;
+  filteredDestTokens: Observable<any[]>;
 
   tokens: Token[] = [
     {
@@ -92,15 +93,27 @@ export class AppComponent {
     }
   ];
 
-  constructor(private cs: ContractsService) {
-    this.tradeCtrl = new FormControl();
-    this.filteredTokens = this.tradeCtrl.valueChanges
+  constructor(private fb: FormBuilder, private cs: ContractsService) {
+    this.exchangeForm = fb.group({
+      'srcToken': [null, Validators.required],
+      'srcTokenQty': [null, Validators.required],
+      'destToken': [null, Validators.required],
+      'destTokenQty': [null, Validators.required],
+    });
+    this.filteredSrcTokens = this.exchangeForm.get('srcToken').valueChanges
       .pipe(
         startWith(''),
         map(token => token ? this.filterTokens(token) : this.tokens.slice())
       );
+    this.filteredDestTokens = this.exchangeForm.get('destToken').valueChanges
+      .pipe(
+        startWith(''),
+        map(token => token ? this.filterTokens(token) : this.tokens.slice())
+      );
+  }
 
-    cs.getUserBalance().then(balance => this.balance = balance);
+  ngOnInit(): void {
+    this.cs.getUserBalance().then(balance => this.balance = balance);
   }
 
   filterTokens(name: string) {
@@ -111,11 +124,11 @@ export class AppComponent {
   onTrade() {
     // hardcoding trade params for testing
     const source = '0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee'; // ETH
-    const srcAmount = '111000000000000000'; // 0.111 ETH
+    const srcAmount = '22000000000000000'; // 0.022 ETH
     const dest = '0x5b9a857e0c3f2acc5b94f6693536d3adf5d6e6be'; // OMG 
     const destAddress = '0x989274c9ce2fd5fc44adaabed38429fdddf80233'; // deafault user account
     const maxDestAmount = MAX_UINT;
-    const minConversionRate = '45'; // min ETH/OMG rate
+    const minConversionRate = '1'; // min ETH/OMG rate, 1=market rate
     const throwOnFailure = false;
 
     this.cs.trade(source, srcAmount, dest, destAddress, maxDestAmount, minConversionRate, throwOnFailure);

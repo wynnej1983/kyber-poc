@@ -62,8 +62,8 @@ export class ContractsService {
     let account = await this.getAccount();
 
     return new Promise((resolve, reject) => {
-      //this._kyberNetworkContract.methods.getBalance(account).call().then(result => {
-      this._web3.eth.getBalance(account).then(result => {
+      this._kyberNetworkContract.methods.getBalance('0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee', account).call().then(result => {
+      //this._web3.eth.getBalance(account).then(result => {
         resolve(this._web3.utils.fromWei(result));
       })
       .catch(err => {
@@ -75,17 +75,15 @@ export class ContractsService {
   public async trade(source, srcAmount, dest, destAddress, maxDestAmount, minConversionRate, throwOnFailure=false): Promise<number> {
     let account = await this.getAccount();
 
-    //const gasPrice = await this._kyberNetworkContract.methods.trade(source, srcAmount, dest, destAddress, maxDestAmount, minConversionRate, throwOnFailure).estimateGas({from: account});
-debugger;
+    const gasPrice = await this._kyberNetworkContract.methods.trade(source, srcAmount, dest, destAddress, maxDestAmount, minConversionRate, throwOnFailure).estimateGas({from: account, gas: '1000000000'});
+
     return new Promise((resolve, reject) => {
-      this._kyberNetworkContract.methods.trade(source, srcAmount, dest, destAddress, maxDestAmount, minConversionRate, throwOnFailure).send({from: account, value: srcAmount, gas: '500000', gasPrice: '1000000000'}).then(result => {
-        debugger;
-        resolve(result);
-      })
-      .catch(err => {
-        debugger;
-        reject(err);
-      });
+      this._kyberNetworkContract.methods
+        .trade(source, srcAmount, dest, destAddress, maxDestAmount, minConversionRate, throwOnFailure)
+        .send({from: account, value: srcAmount, gasPrice})
+        .once('transactionHash', console.log)
+        .once('receipt', console.log)
+        .once('error', console.log)
     }) as Promise<any>;
   }
 }

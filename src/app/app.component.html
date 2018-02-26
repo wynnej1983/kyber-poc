@@ -1,24 +1,52 @@
-<div style="text-align:center">
-  <h1>
-    {{ title }}
-  </h1>
-  Balance: <span>{{balance}}</span>
-  <div class="row">
-    <input matInput placeholder="From" aria-label="From" [matAutocomplete]="auto" [formControl]="tradeCtrl" class="col">
-    <mat-autocomplete #auto="matAutocomplete">
-      <mat-option *ngFor="let token of filteredTokens | async" [value]="token.name">
-        <span>{{ token.name }}</span> |
-        <small>{{token.symbol}}</small>
-      </mat-option>
-    </mat-autocomplete>
-
-    <input matInput placeholder="To" aria-label="To" [matAutocomplete]="auto" [formControl]="tradeCtrl" class="col">
-    <mat-autocomplete #auto="matAutocomplete">
-      <mat-option *ngFor="let token of filteredTokens | async" [value]="token.name">
-        <span>{{ token.name }}</span> |
-        <small>{{token.symbol}}</small>
-      </mat-option>
-    </mat-autocomplete>
+<div class="container-fluid">
+  <div class="row justify-content-end">
+    Balance: <span>{{balance}}</span>
   </div>
-  <button mat-raised-button color="primary" (click)="onTrade()">Exchange</button>
+  <div class="row">
+    <div class="col">
+      <form class="full-width" [formGroup]="exchangeForm" (ngSubmit)="onTrade()">
+        <div class="row">
+          <div class="col-5">
+            <mat-form-field class="full-width">
+              <input matInput placeholder="From" aria-label="From" [matAutocomplete]="autoSrc" formControlName="srcToken">
+              <mat-autocomplete #autoSrc="matAutocomplete">
+                <mat-option *ngFor="let srcToken of filteredSrcTokens | async" [value]="srcToken.name">
+                  <span>{{ srcToken.name }}</span> |
+                  <small>{{srcToken.symbol}}</small>
+                </mat-option>
+              </mat-autocomplete>
+            </mat-form-field>
+            <mat-form-field class="full-width">
+              <input matInput placeholder="0" aria-label="srcTokenQty" formControlName="srcTokenQty">
+            </mat-form-field>
+          </div>
+          <div class="col-2 text-center">
+            <=>
+          </div>
+          <div class="col-5">
+            <mat-form-field class="full-width">
+              <input matInput placeholder="To" aria-label="To" [matAutocomplete]="autoDest" formControlName="destToken">
+              <mat-autocomplete #autoDest="matAutocomplete">
+                <mat-option *ngFor="let destToken of filteredDestTokens | async" [value]="destToken.name">
+                  <span>{{ destToken.name }}</span> |
+                  <small>{{destToken.symbol}}</small>
+                </mat-option>
+              </mat-autocomplete>
+            </mat-form-field>
+            <mat-form-field class="full-width">
+              <input matInput placeholder="0" aria-label="destTokenQty" formControlName="destTokenQty">
+            </mat-form-field>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+  <div class="row justify-content-center">
+    <div class="col text-center">
+      <div>
+        Rate: <span>{{rate}}</span>
+      </div>
+      <button mat-raised-button color="primary" (click)="onTrade()">Exchange</button>
+    </div>
+  </div>
 </div>
