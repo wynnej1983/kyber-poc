@@ -1,4 +1,4 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, NgZone } from '@angular/core';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import {DomSanitizer} from '@angular/platform-browser';
 import {MatSnackBar} from '@angular/material';
@@ -12,11 +12,7 @@ import 'rxjs/add/operator/distinctUntilChanged';
 import {ContractsService} from "./services/contracts/contracts.service";
 import tokens, {Token} from "./tokens";
 
-export class Token {
-  constructor(public name: string, public symbol: string, public address: string) { }
-}
-
-const MAX_UINT = 10**18;
+const MAX_UINT = '100000000000000000000000000000000000000000000000000';
 
 @Component({
   selector: 'app-root',
@@ -26,16 +22,18 @@ const MAX_UINT = 10**18;
 export class AppComponent implements OnInit {
   title = 'kyber poc';
   account = null;
-  totalBalance = 0;
+  totalBalance = '?';
+  allTokenBalances = null;
   srcTokenBalance = 0;
   rate = 0;
   txHash = null;
+  txMessage = null;
   exchangeForm: FormGroup;
   filteredSrcTokens: Observable<Token[]>;
   filteredDestTokens: Observable<Token[]>;
 
   
-  constructor(private fb: FormBuilder, private cs: ContractsService, public _DomSanitizer: DomSanitizer, public snackBar: MatSnackBar) {
+  constructor(private fb: FormBuilder, private _ngZone: NgZone, private cs: ContractsService, public _DomSanitizer: DomSanitizer, public snackBar: MatSnackBar) {
     this.exchangeForm = fb.group({
       'srcToken': [tokens[0], Validators.required],
       'srcTokenQty': ['0', Validators.required],
@@ -51,15 +49,17 @@ export class AppComponent implements OnInit {
     this.exchangeForm.valueChanges
       .debounceTime(1000)
       .distinctUntilChanged()
-      .subscribe(val => {
-        this.getSrcTokenBalance(val);
-        this.getExpectedRate(val);
-        this.exchangeForm.controls['destTokenQty'].setValue(val.srcTokenQty * this.rate);
+      .subscribe(async val => {
+        await this.getSrcTokenBalance(val);
+        await this.getExpectedRate(val);
+        await this.exchangeForm.controls['destTokenQty'].setValue(val.srcTokenQty * this.rate);
+        await this.getAllTokenBalances();
       });
   }
 
-  async ngOnInit(): void {
+  async ngOnInit() {
     this.account = await this.cs.getAccount();
+    this.getAllTokenBalances();
     this.getSrcTokenBalance(this.exchangeForm.value);
     this.getExpectedRate(this.exchangeForm.value);
   }
@@ -87,9 +87,15 @@ export class AppComponent implements OnInit {
     const srcToken = tokens.find(token => token.symbol === exchangeForm.srcToken.symbol);
     if (srcToken) {
       this.cs.getTokenBalance(srcToken.address).then(result => {
-        this.srcTokenBalance = parseFloat(result).toFixed(6);
+        this.srcTokenBalance = Math.round(result * 100000) / 100000; //parseFloat(result).toFixed(6);
       });
     }
+  }
+
+  getAllTokenBalances() {
+    Promise.all(tokens.map(token => this.cs.getTokenBalance(token.address).then(result => ({ symbol: token.symbol, value: Math.round(result * 1000000) / 1000000 })))).then(results => {
+      this.allTokenBalances = results;
+    });
   }
 
   getExpectedRate(exchangeForm) {
@@ -98,7 +104,7 @@ export class AppComponent implements OnInit {
     const quantity = exchangeForm.srcTokenQty;
     if (srcToken && destToken) {
       this.cs.getExpectedRate(srcToken.address, destToken.address, quantity).then(result => {
-        this.rate = parseFloat(result).toFixed(4);
+        this.rate = Math.round(result * 10000) / 10000; //parseFloat(result).toFixed(6);
       });
     }
   }
@@ -113,16 +119,17 @@ export class AppComponent implements OnInit {
     const throwOnFailure = false;
 
     this.cs.trade(source, srcAmount, dest, destAddress, maxDestAmount, minConversionRate, throwOnFailure)
-      .once('transactionHash', txHash => {
+      .on('transactionHash', txHash => {
         console.log(txHash);
-        this.txHash = txHash;
-        /*
-        this.snackBar.open('Transaction ' + txHash + 'being mined', 'Dismiss', {
-          duration: 5000,
+        this._ngZone.run(() => {
+          this.txHash = txHash;
+          this.txMessage = 'Waiting for transaction to be mined...';
+          this.snackBar.open(`Transaction ${txHash} being mined`, 'Dismiss', {
+            duration: 5000,
+          });
         });
-       */
       })
-      .once('receipt', receipt => {
+      .on('receipt', receipt => {
         console.log('---RECEIPT---');
         console.log(receipt);
       })
@@ -134,12 +141,12 @@ export class AppComponent implements OnInit {
       .then(result => {
         console.log('---DONE---');
         console.log(result);
-        this.txHash = null;
-        /*
-        this.snackBar.open('Done!', 'Dismiss', {
-          duration: 5000,
+        this._ngZone.run(() => {
+          this.txMessage = 'Done!';
+          this.snackBar.open('Done!', 'Dismiss', {
+            duration: 5000,
+          });
         });
-       */
       })
   }
 }

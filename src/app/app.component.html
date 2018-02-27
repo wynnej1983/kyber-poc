@@ -1,8 +1,22 @@
+<app-header></app-header>
+<div class="jumbotron jumbotron-fluid">
+  <div id="address-container" class="row justify-content-end">
+    <span>Account:</span>
+    <span class="font-weight-bold px-1">{{account}}</span>
+  </div>
+  <div class="container">
+    <h1 class="display-4">DEX wallet</h1>
+    <p class="lead">Kyber decentralized exchange wallet</p>
+  </div>
+</div>
 <div class="container">
-  <div id="balance-container" class="row align-items-center justify-content-end">
-    <span>Total</span>
-    <span class="font-weight-bold px-2">{{totalBalance}}</span>
-    <span>USD</span>
+  <div id="balances-container" class="row align-items-space-center">
+    <ul class="list-inline">
+      <li [class.active]="exchangeForm.value.srcToken.symbol === token.symbol" class="list-inline-item balances-item" *ngFor="let token of allTokenBalances">
+        <h5> {{token.symbol}} </h5>
+        <span class="small"> {{token.value.toFixed(5)}} </span>
+      </li>
+    </ul>
   </div>
   <div id="exchange-title" class="row align-items-end justify-content-start">
     Exchange
@@ -10,8 +24,8 @@
   <div class="row">
     <div class="col">
       <form [formGroup]="exchangeForm" (ngSubmit)="onTrade()">
-        <div class="row align-items-center">
-          <div class="col">
+        <div class="row align-items-center justify-content-center">
+          <div class="col-md-5">
             <mat-card class="card">
               <mat-form-field class="full-width">
                 <input matInput placeholder="From" aria-label="From" [matAutocomplete]="autoSrc" formControlName="srcToken">
@@ -30,10 +44,10 @@
               <span id="src-token-balance">Address balance {{srcTokenBalance}} {{exchangeForm.value.srcToken.symbol}}</span>
             </mat-card>
           </div>
-          <div class="col-2 text-center">
-            <mat-icon>swap_horiz</mat-icon>
+          <div class="col-md-2 text-center">
+            <mat-icon id="exchange-icon">swap_horiz</mat-icon>
           </div>
-          <div class="col">
+          <div class="col-md-5">
             <mat-card class="card">
               <mat-form-field class="full-width">
                 <input matInput placeholder="To" aria-label="To" [matAutocomplete]="autoDest" formControlName="destToken">
@@ -61,10 +75,13 @@
         1 {{exchangeForm.value.srcToken.symbol}} = {{rate}} {{exchangeForm.value.destToken.symbol}}
       </div>
       <button id="submit-button" mat-raised-button color="primary" (click)="onTrade()">EXCHANGE</button>
-      <div class="pending" *ngIf="txHash">
-        <span>Waiting for transaction to be mined...</span>
+      <div>
+      <div class="pending">
+        <span>{{txMessage}}</span>
         <div>{{txHash}}</div>
+      </div>
       </div>
     </div>
   </div>
 </div>
+<app-footer></app-footer>

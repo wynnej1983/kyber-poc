@@ -1,19 +1,18 @@
 import {Injectable, OnInit} from '@angular/core';
 
-import * as Web3 from 'web3';
-
 declare let require: any;
 declare let window: any;
+
+var Web3 = require('web3');
 
 let kyberNetworkAbi = require('./kyberNetwork.json');
 
 @Injectable()
 export class ContractsService {
   private _account: string = null;
-  private _web3: any;
+  private _web3;
 
   private _kyberNetworkContract: any;
-  //private _kyberNetworkContractAddress: string = "0xe801403a9b8dae494f9088a4687c1c139fae2fe4";
   private _kyberNetworkContractAddress: string = "0x0a56d8a49E71da8d7F9C65F95063dB48A3C9560B";
 
   constructor() {
@@ -34,7 +33,7 @@ export class ContractsService {
     this._kyberNetworkContract = new this._web3.eth.Contract(kyberNetworkAbi, this._kyberNetworkContractAddress);
   }
 
-  private async getAccount(): Promise<string> {
+  public async getAccount(): Promise<string> {
     if (this._account == null) {
       this._account = await new Promise((resolve, reject) => {
         this._web3.eth.getAccounts((err, accs) => {
@@ -86,7 +85,7 @@ export class ContractsService {
     }) as Promise<number>;
   }
 
-  public trade(source, srcAmount, dest, destAddress, maxDestAmount, minConversionRate, throwOnFailure=false): Promise<number> {
+  public trade(source, srcAmount, dest, destAddress, maxDestAmount, minConversionRate, throwOnFailure=false) {
     let account = this._account;
     const srcAmountWei = this._web3.utils.toWei(srcAmount, 'ether');
     //const gasPrice = await this._kyberNetworkContract.methods.trade(source, srcAmountWei, dest, destAddress, maxDestAmount, minConversionRate, throwOnFailure).estimateGas({from: account, gas: '1000000000'});

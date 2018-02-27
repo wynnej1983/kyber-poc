@@ -1,10 +1,19 @@
-#balance-container {
-  height: 50px;
-  padding: 15px;
+#address-container {
+  margin-right: 15px;
+}
+#balances-container {
+  padding-left: 15px;
+}
+.balances-item {
   color: #3ecdfd;
+  padding: 18px;
+}
+.active {
+  background-color: #3ecdfd;
+  color: white;
+  border-radius: 10px;
 }
 #exchange-title {
-  height: 50px;
   padding: 15px;
   padding-bottom: 20px;
   font-size: 24px;
@@ -21,6 +30,12 @@
   width: 200px;
   border-radius: 30px;
 }
+.jumbotron {
+  background-color: #3ecdfd;
+  padding-top: 20px;
+  padding-bottom: 20px;
+  color: white;
+}
 .card {
   height: 205px;
 }
@@ -29,7 +44,12 @@
 }
 .rate {
   padding-top: 30px;
-  padding-bottom: 7px;
+  padding-bottom: 10px;
+  color: #3ecdfd;
+}
+#exchange-icon {
+  font-size: 70px;
+  margin-left: -40px;
   color: #3ecdfd;
 }
 .pending {
